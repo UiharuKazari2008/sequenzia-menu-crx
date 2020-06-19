@@ -155,8 +155,8 @@ chrome.runtime.onInstalled.addListener(function() {
 							messageText = "" + info.selectionText
 						}
 						if (info.srcUrl) {
-							sendItem(`itemType=file&itemFileType=url&itemFileData=${info.srcUrl}&itemFileName=${info.srcUrl.split('/').pop()}` +
-								`&messageText=${messageText}&messageChannelID=${channelNumber}`)
+							sendItem(`itemType=file&itemFileType=url&itemFileData=${btoa(unescape(encodeURIComponent(info.srcUrl)))}&itemFileName=${info.srcUrl.split('/').pop()}` +
+								`&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
 						} else {
 							if (info.linkUrl) {
 								messageText = `${messageText}\n${info.linkUrl}`
@@ -166,8 +166,8 @@ chrome.runtime.onInstalled.addListener(function() {
 							sendItem(`itemType=text&messageText=${messageText.substring(0, 280)}&messageChannelID=${channelNumber}`)
 						}
 					} else if (info.menuItemId.includes("text")) {
-						const messageText = `**📋 Text Selection** - ***${encodeURI(tab.url)}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
-						sendItem(`itemType=text&messageText=${messageText}&messageChannelID=${channelNumber}`)
+						const messageText = `**📋 Text Selection** - ***${tab.url}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
+						sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
 					} else if (info.menuItemId.includes("link") || info.menuItemId.includes("imag")) {
 						let isPossibleFile
 						if (info.linkUrl) {
@@ -186,8 +186,9 @@ chrome.runtime.onInstalled.addListener(function() {
 							if (FileExtention.includes("gif")) {
 								channelNumber = gifID
 							}
-							sendItem('itemType=file&itemFileType=url&itemFileData=' + sourceLink + '&itemFileName=' + sourceLink.split('/').pop() +
-								'&messageText=**🎨 Image** - `' + encodeURI(info.pageUrl) + '`&messageChannelID=' + channelNumber)
+							const messageText = '**🎨 Image** - `' + info.pageUrl + '`'
+							sendItem('itemType=file&itemFileType=url&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) + '&itemFileName=' + sourceLink.split('/').pop() +
+								'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) + '&messageChannelID=' + channelNumber)
 						} else {
 							let sourceLink = ""
 							if (info.linkUrl) {
@@ -196,7 +197,7 @@ chrome.runtime.onInstalled.addListener(function() {
 								sourceLink = info.pageUrl
 							}
 							const messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
-							sendItem(`itemType=text&messageText=${messageText}&messageChannelID=${channelNumber}`)
+							sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
 						}
 					} else {
 						alert("Not understood")
