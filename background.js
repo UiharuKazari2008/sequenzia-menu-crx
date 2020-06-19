@@ -170,10 +170,12 @@ chrome.runtime.onInstalled.addListener(function() {
 						sendItem(`itemType=text&messageText=${messageText}&messageChannelID=${channelNumber}`)
 					} else if (info.menuItemId.includes("link") || info.menuItemId.includes("imag")) {
 						let isPossibleFile
-						if (info.linkUrl.includes(".")) {
-							isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
-						} else {
-							isPossibleFile =false
+						if (info.linkUrl) {
+							if (info.linkUrl.includes(".")) {
+								isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
+							} else {
+								isPossibleFile = false
+							}
 						}
 						if (info.srcUrl || isPossibleFile ) {
 							let sourceLink = info.srcUrl
