@@ -183,11 +183,14 @@ chrome.runtime.onInstalled.addListener(function() {
 								sourceLink = info.linkUrl
 							}
 							const FileExtention = sourceLink.split('/').pop().split(".").pop().toLowerCase()
+							let FileName = sourceLink.split('/').pop()
 							if (FileExtention.includes("gif")) {
 								channelNumber = gifID
+							} else if (FileExtention.includes("jpglarge")) {
+								FileName = sourceLink.split('/').pop().replace("jpglarge", "jpg")
 							}
 							const messageText = '**🎨 Image** - `' + info.pageUrl + '`'
-							sendItem('itemType=file&itemFileType=url&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) + '&itemFileName=' + sourceLink.split('/').pop() +
+							sendItem('itemType=file&itemFileType=url&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) + '&itemFileName=' + FileName +
 								'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) + '&messageChannelID=' + channelNumber)
 						} else {
 							let sourceLink = ""
