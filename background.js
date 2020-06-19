@@ -169,7 +169,13 @@ chrome.runtime.onInstalled.addListener(function() {
 						const messageText = `**📋 Text Selection** - ***${encodeURI(tab.url)}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
 						sendItem(`itemType=text&messageText=${messageText}&messageChannelID=${channelNumber}`)
 					} else if (info.menuItemId.includes("link") || info.menuItemId.includes("imag")) {
-						if (info.srcUrl || acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())) {
+						let isPossibleFile
+						if (info.linkUrl.includes(".")) {
+							isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
+						} else {
+							isPossibleFile =false
+						}
+						if (info.srcUrl || isPossibleFile ) {
 							let sourceLink = info.srcUrl
 							if (info.menuItemId.includes("link")) {
 								sourceLink = info.linkUrl
