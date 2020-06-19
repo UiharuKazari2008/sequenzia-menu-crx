@@ -187,12 +187,12 @@ chrome.runtime.onInstalled.addListener(function() {
 							if (FileExtention.includes("gif")) {
 								channelNumber = gifID
 							}
-							if (FileName.includes("jpglarge")) {
-								FileName = sourceLink.split('/').pop().replace("jpglarge", "jpg")
-							} else if (FileName.includes("jpeglarge")) {
-								FileName = sourceLink.split('/').pop().replace("jpeglarge", "jpg")
-							} else if (FileName.includes("pnglarge")) {
-								FileName = sourceLink.split('/').pop().replace("pnglarge", "png")
+							if (FileName.includes("jpg:large")) {
+								FileName = sourceLink.split('/').pop().replace("jpg:large", "jpg")
+							} else if (FileName.includes("jpeg:large")) {
+								FileName = sourceLink.split('/').pop().replace("jpeg:large", "jpg")
+							} else if (FileName.includes("png:large")) {
+								FileName = sourceLink.split('/').pop().replace("png:large", "png")
 							}
 							const messageText = '**🎨 Image** - `' + info.pageUrl + '`'
 							sendItem('itemType=file&itemFileType=url&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) + '&itemFileName=' + FileName +
