@@ -22,9 +22,9 @@ function save_options() {
 function restore_options() {
     // Use default value color = 'red' and likesColor = true.
     chrome.storage.local.get({
-        system_id: '',
+        system_id: 'GENERIC',
         api_key: '',
-        api_server: '',
+        api_server: 'http://localhost:8080',
     }, function(items) {
         document.getElementById('system_id').value = items.system_id;
         document.getElementById('api_key').value = items.api_key;
