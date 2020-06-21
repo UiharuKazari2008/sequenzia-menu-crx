@@ -83,16 +83,16 @@ function loadExtention() {
 						'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) + '&messageChannelID=' + channelNumber)
 				} else {
 					let messageText = ''
-					if ( info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be") ) {
-						messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
-					} else {
-						messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
-					}
 					let sourceLink = ""
 					if (info.linkUrl) {
 						sourceLink = info.linkUrl
 					} else if (info.pageUrl) {
 						sourceLink = info.pageUrl
+					}
+					if ( info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be") ) {
+						messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
+					} else {
+						messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
 					}
 					sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
 				}
