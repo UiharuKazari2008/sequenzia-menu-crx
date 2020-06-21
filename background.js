@@ -84,11 +84,9 @@ function loadExtention() {
 				} else {
 					let messageText = ''
 					if ( info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be") ) {
-						if ( YouTubeChannels.indexOf(msg.channel.id) == '-1' && TwitterChannels.indexOf(msg.channel.id) == '-1') {
-							messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
-						} else {
-							messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
-						}
+						messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
+					} else {
+						messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
 					}
 					let sourceLink = ""
 					if (info.linkUrl) {
