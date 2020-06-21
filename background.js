@@ -17,6 +17,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 function loadExtention() {
 	// Get System Config
+	let configurationAPI = null
 	chrome.storage.local.get(['api_server', 'system_id', 'api_key'], function(settings) {
 		console.log('Settings retrieved', settings);
 		function onClickHandler(info, tab) {
@@ -102,7 +103,6 @@ function loadExtention() {
 		};
 
 		if (settings.api_server != '' && settings.api_key != '' && settings.system_id != '') {
-			let configurationAPI
 			fetch(`${settings.api_server}/endpoint/getConfig`, {
 				method: 'GET',
 				headers: {
