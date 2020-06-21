@@ -1,7 +1,7 @@
 {
   "name": "Kanmi Share",
-  "description": "Share Links to Kanmi",
-  "version": "0.0.1",
+  "description": "Share Links to a Kanmi API",
+  "version": "0.0.2",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
@@ -17,7 +17,7 @@
     "scripts": ["background.js"]
   },
   "browser_action": {
-    "default_title": "Reload Kanmi",
+    "default_title": "Reload Configuration",
     "default_icon": "icon96.png"
   },
   "manifest_version": 2
