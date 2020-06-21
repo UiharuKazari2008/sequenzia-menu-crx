@@ -2,6 +2,13 @@ const acceptedImages = [ "jpg","png","jpeg","jiff","tiff","gif","gifv" ]
 
 // Initialize the Chrome Extension
 chrome.runtime.onStartup.addListener(function() {
+	loadExtention()
+});
+chrome.runtime.onInstalled.addListener(function() {
+	loadExtention()
+});
+
+function loadExtention() {
 	// Get System Config
 	chrome.storage.local.get(['api_server', 'system_id', 'api_key'], function(settings) {
 		console.log('Settings retrieved', settings);
@@ -273,4 +280,4 @@ chrome.runtime.onStartup.addListener(function() {
 		});
 		initSettings()
 	});
-});
+}
