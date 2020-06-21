@@ -1,7 +1,7 @@
 const acceptedImages = [ "jpg","png","jpeg","jiff","tiff","gif","gifv" ]
 
 // Initialize the Chrome Extension
-chrome.runtime.onInstalled.addListener(function() {
+chrome.runtime.onStartup.addListener(function() {
 	// Get System Config
 	chrome.storage.local.get(['api_server', 'system_id', 'api_key'], function(settings) {
 		console.log('Settings retrieved', settings);
@@ -264,7 +264,6 @@ chrome.runtime.onInstalled.addListener(function() {
 				alert("Please configure your API Key and Server in the Extension Settings")
 			}
 		}
-
 		chrome.browserAction.onClicked.addListener(function(tab) {
 			alert("Reloading Configuration")
 			chrome.contextMenus.removeAll(function (){
@@ -272,9 +271,6 @@ chrome.runtime.onInstalled.addListener(function() {
 			})
 			//chrome.runtime.reload();
 		});
-
 		initSettings()
 	});
-
-
 });
