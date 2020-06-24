@@ -90,7 +90,7 @@ function loadExtention() {
 					} else if (info.pageUrl) {
 						sourceLink = info.pageUrl
 					}
-					if ( info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be") ) {
+					if ( sourceLink.includes("youtube.com") || sourceLink.includes("youtu.be") ) {
 						messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
 					} else {
 						messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
