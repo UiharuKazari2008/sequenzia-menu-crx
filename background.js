@@ -22,6 +22,7 @@ function loadExtention() {
 		console.log('Settings retrieved', settings);
 		function onClickHandler(info, tab) {
 			function sendItem(message) {
+				console.log(message)
 				var baseUrl = `${settings.api_server}/endpoint/sendContent/v2`;
 				fetch(baseUrl, {
 					method: 'POST',
@@ -33,6 +34,22 @@ function loadExtention() {
 					}
 				})
 			}
+			function confirmItem(message, text) {
+				console.log(message)
+				var check = confirm(text);
+				if (check) {
+					var baseUrl = `${settings.api_server}/endpoint/sendContent/v2`;
+					fetch(baseUrl, {
+						method: 'POST',
+						body: message,
+						headers: {
+							'Content-type': 'application/x-www-form-urlencoded',
+							'X-User-Agent': `KanmiChromeExt/${settings.system_id}`,
+							'X-WSS-Key': `${configurationAPI.wss_key}`
+						}
+					})
+				}
+			}
 
 			console.log(info)
 			console.log(tab)
@@ -40,20 +57,57 @@ function loadExtention() {
 			let channelNumber = info.menuItemId.split("-").pop()
 			if (info.menuItemId.includes("tweet")) {
 				let messageText = ""
+				let isPossibleFile
+				let messageData
 				if (info.selectionText) {
 					messageText = "" + info.selectionText
 				}
-				if (info.srcUrl) {
-					sendItem(`itemType=file&itemFileType=url&itemFileData=${btoa(unescape(encodeURIComponent(info.srcUrl)))}&itemFileName=${info.srcUrl.split('/').pop()}` +
-						`&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
-				} else {
-					if (info.linkUrl) {
-						messageText = `${messageText}\n${info.linkUrl}`
-					} else if (info.pageUrl) {
-						messageText = `${messageText}\n${info.pageUrl}`
-					}
-					sendItem(`itemType=text&messageText=${messageText.substring(0, 280)}&messageChannelID=${channelNumber}`)
+				let sourceLink = info.srcUrl
+				if (info.linkUrl) {
+					sourceLink = info.linkUrl
+					messageText = sourceLink
+				} else if (info.pageUrl) {
+					sourceLink = `${info.pageUrl}`
+					messageText = sourceLink
 				}
+
+				if (info.linkUrl || info.srcUrl) {
+					if( info.srcUrl) {
+						isPossibleFile = true
+					} else if (info.linkUrl.includes(".")) {
+						isPossibleFile = true
+						if (acceptedImages.includes(info.linkUrl.split('/').pop().toLowerCase()) > -1) {
+							isPossibleFile = false
+						}
+					} else {
+						isPossibleFile = false
+					}
+				}
+				if (isPossibleFile ) {
+					let fileURL
+					if (info.srcUrl) {
+						fileURL = info.srcUrl
+					} else {
+						fileURL = sourceLink
+					}
+					let FileName = fileURL.split('/').pop().split(".").pop().toLowerCase()
+					if (FileName.includes(":")) {
+						FileName = sourceLink.split('/').pop().split(":")[0]
+					}
+					if (FileName.includes("?")) {
+						FileName = sourceLink.split('/').pop().split("?")[0]
+					}
+					messageData = 'itemType=file' +
+						'&itemFileType=url' +
+						'&itemFileData=' + btoa(unescape(encodeURIComponent(fileURL))) +
+						'&itemFileName=' + FileName
+					messageText = '#KanmiShare'
+				} else {
+					messageData = 'itemType=text'
+				}
+				confirmItem( messageData +
+						'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
+						'&messageChannelID=' + channelNumber, messageText)
 			} else if (info.menuItemId.includes("text")) {
 				const messageText = `**📋 Text Selection** - ***${tab.url}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
 				sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${channelNumber}`)
@@ -78,6 +132,9 @@ function loadExtention() {
 					}
 					if (FileName.includes(":")) {
 						FileName = sourceLink.split('/').pop().split(":")[0]
+					}
+					if (FileName.includes("?")) {
+						FileName = sourceLink.split('/').pop().split("?")[0]
 					}
 					const messageText = '**🎨 Image** - `' + info.pageUrl + '`'
 					sendItem('itemType=file&itemFileType=url&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) + '&itemFileName=' + FileName +
