@@ -18,6 +18,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 function loadExtention() {
 	// Get System Config
 	let configurationAPI = null
+	let gifID = null
 	chrome.storage.local.get(['api_server', 'system_id', 'api_key'], function(settings) {
 		console.log('Settings retrieved', settings);
 		function onClickHandler(info, tab) {
@@ -210,7 +211,7 @@ function loadExtention() {
 				let menuSendLink = []
 				let menuSendImag = []
 				let twitterID = ""
-				let gifID = ""
+
 				// Find GIF Channel
 				for (let item of configurationAPI.destination_imag) {
 					if (item.name == "GIF") {
