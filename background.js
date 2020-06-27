@@ -10,9 +10,8 @@ chrome.runtime.onInstalled.addListener(function() {
 chrome.browserAction.onClicked.addListener(function(tab) {
 	alert("Reloading Configuration")
 	chrome.contextMenus.removeAll(function (){
-		loadExtention()
 	})
-	//chrome.runtime.reload();
+	chrome.runtime.reload();
 });
 
 function loadExtention() {
