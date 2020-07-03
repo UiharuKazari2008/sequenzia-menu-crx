@@ -1,3 +1,25 @@
+/*    ___                  __                        _______ __
+     /   | _________ _____/ /__  ____ ___  __  __   / ____(_) /___  __
+    / /| |/ ___/ __ `/ __  / _ \/ __ `__ \/ / / /  / /   / / __/ / / /
+   / ___ / /__/ /_/ / /_/ /  __/ / / / / / /_/ /  / /___/ / /_/ /_/ /
+  /_/  |_\___/\__,_/\__,_/\___/_/ /_/ /_/\__, /   \____/_/\__/\__, /
+                                        /____/               /____/
+Developed at Academy City Research
+"Developing a better automated future"
+======================================================================================
+Kanmi Project - Chrome Sharing Extension
+Copyright 2020
+======================================================================================
+This code is under a strict NON-DISCLOSURE AGREEMENT, If you have the rights
+to access this project you understand that release, demonstration, or sharing
+of this project or its content will result in legal consequences. All questions
+about release, "snippets", or to report spillage are to be directed to:
+
+- ACR Docutrol -----------------------------------------
+(Academy City Research Document & Data Control Services)
+docutrol@acr.moe - 301-399-3671 - docs.acr.moe/docutrol
+====================================================================================== */
+
 const acceptedImages = [ "jpg","png","jpeg","jiff","tiff","gif","gifv" ]
 let transportKey = ''
 let apiServerUrl = ''
@@ -89,6 +111,267 @@ function loadConfig(ok) {
 		}
 	})
 }
+// Sends a POST to the API
+function sendItem(message,ok) {
+	//console.log(message)
+	if (apiServerUrl !== '' && apiSystemId !== '' && transportKey !== '') {
+		fetch(`${apiServerUrl}/endpoint/sendContent/v2`, {
+			method: 'POST',
+			body: message,
+			headers: {
+				'Content-type': 'application/x-www-form-urlencoded',
+				'X-User-Agent': `KanmiChromeExt/${apiSystemId}`,
+				'X-WSS-Key': `${transportKey}`
+			}
+		})
+			.then((response) => response.text())
+			.then(function(response) {
+				if (response.includes('OK')) {
+
+				} else {
+					console.log('Failed to send your content : ' + response)
+					alert("Failed to send your request: " + response)
+				}
+			})
+			.catch(function(error){
+				console.log('Failed to send your content')
+				console.log(error)
+				alert("Failed to send your request\n" + error.message.toString())
+			})
+	} else {
+		console.log('Some required instance configuration is missing')
+	}
+}
+// Sends a POST to the API with user confirmation
+function confirmItem(message, text, ok) {
+	//console.log(message)
+	const check = confirm(text);
+	if (apiServerUrl !== '' && apiSystemId !== '' && transportKey !== '') {
+		if (check) {
+			fetch(`${apiServerUrl}/endpoint/sendContent/v2`, {
+				method: 'POST',
+				body: message,
+				headers: {
+					'Content-type': 'application/x-www-form-urlencoded',
+					'X-User-Agent': `KanmiChromeExt/${apiSystemId}`,
+					'X-WSS-Key': `${transportKey}`
+				}
+			})
+				.then((response) => response.text())
+				.then(function(response) {
+					if (response.includes('OK')) {
+
+					} else {
+						console.log('Failed to send your content : ' + response)
+						alert("Failed to send your request: " + response)
+					}
+				})
+				.catch(function (error) {
+					console.log('Failed to send your content')
+					console.log(error)
+					alert("Failed to send your request\n" + error.message.toString())
+				})
+		} else {
+			console.log("Request canceled")
+		}
+	} else {
+		console.log('Some required instance configuration is missing')
+	}
+}
+// Handle menu item actions
+function onClickHandler(info, tab) {
+	// Read Cookies for the current page
+	let cookieString = ''
+	chrome.cookies.getAll({domain: info.pageUrl.split('/')[2] }, (cookie) => {
+		// Generate a Cookie String
+		for (const item of cookie) {
+			cookieString += `${item.name}=${item.value};`
+		}
+
+		// Print Returned Inputs
+		//console.log(info)
+		//console.log(tab)
+		//console.log(cookieString)
+
+		// Generate Static Message Data
+		let messageData = 'itemReferral=' + btoa(unescape(encodeURIComponent(`https://${info.pageUrl.split('/')[2]}/`)))
+
+		// Parse the Menu Item
+		if (info.menuItemId.split('-')[0] === "tweet") {
+			let messageText = ""
+			let isPossibleFile
+			if (info.selectionText) {
+				messageText = "" + info.selectionText
+			}
+			let sourceLink = info.srcUrl
+			if (info.linkUrl) {
+				sourceLink = info.linkUrl
+				messageText = sourceLink
+			} else if (info.pageUrl) {
+				sourceLink = `${info.pageUrl}`
+				messageText = sourceLink
+			}
+			if (info.linkUrl || info.srcUrl) {
+				if( info.srcUrl) {
+					isPossibleFile = true
+				} else if (info.linkUrl.includes(".")) {
+					isPossibleFile = true
+					if (acceptedImages.includes(info.linkUrl.split('/').pop().toLowerCase())) {
+						isPossibleFile = false
+					}
+				} else {
+					isPossibleFile = false
+				}
+			}
+			if (isPossibleFile ) {
+				let fileURL
+				if (info.srcUrl) {
+					fileURL = info.srcUrl
+				} else {
+					fileURL = sourceLink
+				}
+				let FileName = fileURL.split('/').pop()
+				if (FileName.includes(":")) {
+					FileName = sourceLink.split('/').pop().split(":")[0]
+				}
+				if (FileName.includes("?")) {
+					FileName = sourceLink.split('/').pop().split("?")[0]
+				}
+				messageData += '&itemType=file' +
+					'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
+					'&itemFileType=url' +
+					'&itemFileData=' + btoa(unescape(encodeURIComponent(fileURL))) +
+					'&itemFileName=' + FileName
+				messageText = '#KanmiShare'
+			} else {
+				messageData += 'itemType=text'
+			}
+			console.log(`Got a Tweet : ${messageText}`)
+			confirmItem( messageData +
+				'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
+				'&messageChannelID=' + info.menuItemId.split("-")[1], messageText)
+		} else if (info.menuItemId.split('-')[0] === "text" ) {
+			const messageText = `**📋 Text Selection** - ***${tab.url}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
+			console.log(`Got a Text Selection : ${info.selectionText.substring(0, 1800)}`)
+			sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
+		} else if (info.menuItemId.split('-')[0] === "download") {
+			// For any non-special downloads
+			function sendDownload() {
+				let sourceLink = info.pageUrl
+				if (info.srcUrl) { sourceLink = info.srcUrl } else if (info.linkUrl) { sourceLink = info.linkUrl }
+				let FileName = sourceLink.split('/').pop()
+				if (FileName.includes(":")) {
+					FileName = FileName.split(":")[0]
+				}
+				if (FileName.includes("?")) {
+					FileName = FileName.split("?")[0]
+				}
+				console.log(`Got a Download : ${sourceLink} (${FileName})`)
+				const messageText = '**🌐 Download** - `' + info.pageUrl + '`'
+				messageData += '&itemType=file' +
+					'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
+					'&itemFileType=url' +
+					'&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) +
+					'&itemFileName=' + FileName +
+					'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
+					'&messageChannelID=' + info.menuItemId.split("-")[1]
+			}
+			if (info.linkUrl && info.linkUrl.includes("pixiv.net/")) { // Pixiv Link
+				const itemURL = info.linkUrl
+				if (itemURL.includes("/artworks/")) { // Illustration
+					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
+					messageData += '&itemType=pixiv' +
+						'&itemContentType=DownloadPost' +
+						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&messageChannelID=' + info.menuItemId.split("-")[1]
+				} else if (itemURL.includes("/users/")) { // User
+					console.log(`Got Pixiv User Link : ${itemURL}`)
+					messageData += '&itemType=pixiv' +
+						'&itemContentType=DownloadPost' +
+						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&messageChannelID=' + info.menuItemId.split("-")[1]
+				} else {
+					sendDownload()
+				}
+			} else if (info.pageUrl && info.pageUrl.includes("pixiv.net/" && !info.srcUrl)) { // Pixiv Page (but not if you selected a image)
+				const itemURL = info.pageUrl
+				if (itemURL.includes("/artworks/")) { // Illustration
+					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
+					messageData += '&itemType=pixiv' +
+						'&itemContentType=DownloadUser' +
+						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&messageChannelID=' + info.menuItemId.split("-")[1]
+				} else if (itemURL.includes("/users/")) { // User
+					console.log(`Got Pixiv User Link : ${itemURL}`)
+					messageData += '&itemType=pixiv' +
+						'&itemContentType=DownloadUser' +
+						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&messageChannelID=' + info.menuItemId.split("-")[1]
+				} else {
+					sendDownload()
+				}
+			} else {
+				sendDownload()
+			}
+			sendItem(messageData)
+		} else if (info.menuItemId.split('-')[0] === "link" || info.menuItemId.split('-')[0] === "imag") {
+			let isPossibleFile
+			if (info.linkUrl) {
+				if (info.linkUrl.includes(".")) {
+					isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
+				} else {
+					isPossibleFile = false
+				}
+			}
+			if (info.srcUrl || isPossibleFile ) {
+				let sourceLink = info.srcUrl
+				if (info.menuItemId.includes("link")) { sourceLink = info.linkUrl }
+				// If GIF image and channel exists else channel number
+				let channelNumber = info.menuItemId.split("-")[1]
+				if (info.menuItemId.split("-").length === 3 &&
+					sourceLink.includes(".") &&
+					sourceLink.split('/').pop().split(".").pop().toLowerCase().includes("gif")) {
+						channelNumber = info.menuItemId.split("-")[2]
+				}
+				// Clean up Filename
+				let FileName = sourceLink.split('/').pop()
+				if (FileName.includes(":")) {
+					FileName = sourceLink.split('/').pop().split(":")[0]
+				}
+				if (FileName.includes("?")) {
+					FileName = sourceLink.split('/').pop().split("?")[0]
+				}
+				console.log(`Got a Image or File : ${sourceLink} (${FileName})`)
+				messageData += '&itemType=file' +
+					'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
+					'&itemFileType=url' +
+					'&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) +
+					'&itemFileName=' + FileName +
+					'&messageText=' + btoa(unescape(encodeURIComponent('**🎨 Image** - `' + info.pageUrl + '`'))) +
+					'&messageChannelID=' + channelNumber
+				sendItem(messageData)
+			} else {
+				let sourceLink = ""
+				if (info.linkUrl) {
+					sourceLink = info.linkUrl
+				} else if (info.pageUrl) {
+					sourceLink = info.pageUrl
+				}
+				// If YouTube link else standard Link text
+				let messageText = `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`
+				if (sourceLink.includes("youtube.com") || sourceLink.includes("youtu.be")) {
+					messageText = `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***`
+					console.log(`Got a YouTube Link : ${sourceLink}`)
+				} else {
+					console.log(`Got a Link : ${sourceLink}`)
+				}
+				sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
+			}
+		} else {
+			alert("Not understood")
+		}
+	})
+};
 // Generates the contextual menu items
 function generateContexMenu(config, ok) {
 	// Start with a menu context menu
@@ -102,89 +385,83 @@ function generateContexMenu(config, ok) {
 		let	gifID = "";
 		let twitterID = "";
 		let downloadID = "";
+		let linksID = "";
 
-		// Setup Submenu Items
-		// Text Selection Listeners
-		for (let item of config.destination_text) {
-			if (item.name === "Twitter") { // Set Twitter Channel
+		// Get Special Channel
+		for (let item of config.destination_special) {
+			if (item.name === "S-Twitter") {
 				twitterID = "tweet-" + item.id
-			} else if (item.name !== "Download" && item.name !== "GIF") { // Filter out preset const's
-				const channelID = 'text-' + item.id
-				let channelName = item.name
-				if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
-					channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
-				}
-				// Create Submenu Item
-				menuSendText.push({
-					id: channelID,
-					title: channelName,
-					contexts: ["selection", "editable"],
-					act: (info, tab) => {
-						onClickHandler(info, tab, info.menuItemId)
-					}
-				})
+			} else if (item.name === "S-Download") {
+				downloadID = "download-" + item.id
+			} else if (item.name === "S-GIF") {
+				gifID = "" + item.id
+			} else if (item.name === "S-Links") {
+				linksID = "link-" + item.id
 			}
 		}
-		// Set GIF Channel first
-		for (let item of config.destination_imag) {
-			if (item.name === "GIF") {
-				gifID = "" + item.id
+		// Text Selection Listeners
+		for (let item of config.destination_text) {
+			const channelID = 'text-' + item.id
+			let channelName = item.name
+			if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
+				channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
 			}
+			// Create Submenu Item
+			menuSendText.push({
+				id: channelID,
+				title: channelName,
+				contexts: ["selection", "editable"],
+				act: (info, tab) => {
+					onClickHandler(info, tab, info.menuItemId)
+				}
+			})
 		}
 		// Image File Listeners
 		for (let item of config.destination_imag) {
-			if (item.name === "Download") { // Set Downloads Channel
-				downloadID = "download-" + item.id
-			} else if (item.name !== "Twitter" && item.name !== "GIF") { // Set All other channels
-				let channelName, channelID
-				if (item.name === "Pictures" && gifID !== "") { // Add Pictures + GIF Channel (if GIF channel exists)
-					channelName = item.name + " / GIFs"
-					channelID = `imag-${item.id}-${gifID}`
-				} else if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
-					channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
-				} else { // Add other custom menu items
-					channelName = item.name
-					channelID = `imag-${item.id}`
-				}
-				// Create Submenu Item
-				menuSendImag.push({
-					id: channelID,
-					title: channelName,
-					contexts: ["image"],
-					act: (info, tab) => {
-						onClickHandler(info, tab, info.menuItemId)
-					}
-				})
+			let channelName, channelID
+			if (item.name === "Pictures" && gifID !== "") { // Add Pictures + GIF Channel (if GIF channel exists)
+				channelName = item.name + " / GIFs"
+				channelID = `imag-${item.id}-${gifID}`
+			} else if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
+				channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
+			} else { // Add other custom menu items
+				channelName = item.name
+				channelID = `imag-${item.id}`
 			}
+			// Create Submenu Item
+			menuSendImag.push({
+				id: channelID,
+				title: channelName,
+				contexts: ["image"],
+				act: (info, tab) => {
+					onClickHandler(info, tab, info.menuItemId)
+				}
+			})
 		}
 		// General Link Listeners
 		for (let item of config.destination_link) {
-			if (item.name !== "Twitter" && item.name !== "Download" && item.name !== "GIF") { // Filter out preset const's
-				let channelName, channelID
-				if (item.name !== "Download" && item.name === "Pictures" && gifID !== "") { // Add Pictures + GIF Channel (if GIF channel exists)
-					channelName = item.name + " / GIFs"
-					channelID = `link-${item.id}`
-				} else if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
-					channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
-					channelID = `link-${item.id}-${gifID}`
-				} else { // Add other custom menu items
-					channelName = item.name
-					channelID = `link-${item.id}`
-				}
-				// Create Submenu Item
-				menuSendLink.push({
-					id: channelID,
-					title: channelName,
-					contexts: ["link", "page"],
-					act: (info, tab) => {
-						onClickHandler(info, tab, info.menuItemId)
-					}
-				})
+			let channelName, channelID
+			if (item.name === "Pictures" && gifID !== "") { // Add Pictures + GIF Channel (if GIF channel exists)
+				channelName = item.name + " / GIFs"
+				channelID = `link-${item.id}-${gifID}`
+			} else if (item.name.includes("-")) { // Add '(Sub Name)' for items that have '-'
+				channelName = `${item.name.split("-")[0]} (${item.name.split("-")[1]})`
+				channelID = `link-${item.id}-${gifID}`
+			} else { // Add other custom menu items
+				channelName = item.name
+				channelID = `link-${item.id}`
 			}
+			// Create Submenu Item
+			menuSendLink.push({
+				id: channelID,
+				title: channelName,
+				contexts: ["link", "page"],
+				act: (info, tab) => {
+					onClickHandler(info, tab, info.menuItemId)
+				}
+			})
 		}
 
-
-		// Setup Root Menu Items
 		// Twitter Outbox
 		if (twitterID !== "") {
 			rootMenu.push({
@@ -203,13 +480,26 @@ function generateContexMenu(config, ok) {
 			rootMenu.push({
 				id: downloadID,
 				title: '📤 Download File',
-				contexts: ["link", "image"],
+				contexts: ["link", "page", "image"],
 				act: (info, tab) => {
 					onClickHandler(info, tab)
 				}
 			})
 		} else {
 			console.log("No Download Channel was found")
+		}
+		// Bookmarks Folder
+		if (linksID !== "") {
+			rootMenu.push({
+				id: linksID,
+				title: '🔖 Bookmark Link',
+				contexts: ["link", "page"],
+				act: (info, tab) => {
+					onClickHandler(info, tab)
+				}
+			})
+		} else {
+			console.log("No Bookmarks Channel was found")
 		}
 		// Text
 		if (menuSendText.length > 0) {
@@ -279,207 +569,7 @@ function generateContexMenu(config, ok) {
 		}
 	})
 }
-// Sends a POST to the API
-function sendItem(message,ok) {
-	console.log(message)
-	if (apiServerUrl !== '' && apiSystemId !== '' && transportKey !== '') {
-		fetch(`${apiServerUrl}/endpoint/sendContent/v2`, {
-			method: 'POST',
-			body: message,
-			headers: {
-				'Content-type': 'application/x-www-form-urlencoded',
-				'X-User-Agent': `KanmiChromeExt/${apiSystemId}`,
-				'X-WSS-Key': `${transportKey}`
-			}
-		})
-			.then((response) => response.text())
-			.then(function(response) {
-				if (response.includes('OK')) {
-
-				} else {
-					console.log('Failed to send your content : ' + response)
-					alert("Failed to send your request: " + response)
-				}
-			})
-			.catch(function(error){
-				console.log('Failed to send your content')
-				console.log(error)
-				alert("Failed to send your request\n" + error.message.toString())
-			})
-	} else {
-		console.log('Some required instance configuration is missing')
-	}
-}
-// Sends a POST to the API with user confirmation
-function confirmItem(message, text, ok) {
-	console.log(message)
-	const check = confirm(text);
-	if (apiServerUrl !== '' && apiSystemId !== '' && transportKey !== '') {
-		if (check) {
-			fetch(`${apiServerUrl}/endpoint/sendContent/v2`, {
-				method: 'POST',
-				body: message,
-				headers: {
-					'Content-type': 'application/x-www-form-urlencoded',
-					'X-User-Agent': `KanmiChromeExt/${apiSystemId}`,
-					'X-WSS-Key': `${transportKey}`
-				}
-			})
-				.then((response) => response.text())
-				.then(function(response) {
-					if (response.includes('OK')) {
-
-					} else {
-						console.log('Failed to send your content : ' + response)
-						alert("Failed to send your request: " + response)
-					}
-				})
-				.catch(function (error) {
-					console.log('Failed to send your content')
-					console.log(error)
-					alert("Failed to send your request\n" + error.message.toString())
-				})
-		} else {
-			console.log("Request canceled")
-		}
-	} else {
-		console.log('Some required instance configuration is missing')
-	}
-}
-// Handle menu item actions
-function onClickHandler(info, tab) {
-	// Read Cookies for the current page
-	let cookieString = ''
-	chrome.cookies.getAll({domain: info.pageUrl.split('/')[2] }, (cookie) => {
-		// Generate a Cookie String
-		for (const item of cookie) {
-			cookieString += `${item.name}=${item.value};`
-		}
-
-		// Print Returned Inputs
-		console.log(info)
-		console.log(tab)
-		console.log(cookieString)
-
-		// Generate Static Message Data
-		let messageData = 'itemReferral=' + btoa(unescape(encodeURIComponent(`https://${info.pageUrl.split('/')[2]}/`)))
-
-		// Parse the Menu Item
-		if (info.menuItemId.split('-')[0] === "tweet") {
-			let messageText = ""
-			let isPossibleFile
-			if (info.selectionText) {
-				messageText = "" + info.selectionText
-			}
-			let sourceLink = info.srcUrl
-			if (info.linkUrl) {
-				sourceLink = info.linkUrl
-				messageText = sourceLink
-			} else if (info.pageUrl) {
-				sourceLink = `${info.pageUrl}`
-				messageText = sourceLink
-			}
-			if (info.linkUrl || info.srcUrl) {
-				if( info.srcUrl) {
-					isPossibleFile = true
-				} else if (info.linkUrl.includes(".")) {
-					isPossibleFile = true
-					if (acceptedImages.includes(info.linkUrl.split('/').pop().toLowerCase())) {
-						isPossibleFile = false
-					}
-				} else {
-					isPossibleFile = false
-				}
-			}
-			if (isPossibleFile ) {
-				let fileURL
-				if (info.srcUrl) {
-					fileURL = info.srcUrl
-				} else {
-					fileURL = sourceLink
-				}
-				let FileName = fileURL.split('/').pop()
-				if (FileName.includes(":")) {
-					FileName = sourceLink.split('/').pop().split(":")[0]
-				}
-				if (FileName.includes("?")) {
-					FileName = sourceLink.split('/').pop().split("?")[0]
-				}
-				messageData += '&itemType=file' +
-					'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
-					'&itemFileType=url' +
-					'&itemFileData=' + btoa(unescape(encodeURIComponent(fileURL))) +
-					'&itemFileName=' + FileName
-				messageText = '#KanmiShare'
-			} else {
-				messageData += 'itemType=text'
-			}
-			confirmItem( messageData +
-				'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
-				'&messageChannelID=' + info.menuItemId.split("-")[1], messageText)
-		} else if (info.menuItemId.split('-')[0] === "text" ) {
-			const messageText = `**📋 Text Selection** - ***${tab.url}***\n` + '`' + info.selectionText.substring(0, 1800) + '`'
-			sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
-		} else if (info.menuItemId.split('-')[0] === "download") {
-			const sourceLink = ((info.srcUrl) ? info.srcUrl : info.linkUrl )
-			let FileName = sourceLink.split('/').pop()
-			if (FileName.includes(":")) { FileName = FileName.split(":")[0] }
-			if (FileName.includes("?")) { FileName = FileName.split("?")[0] }
-			const messageText = '**🌐 Download** - `' + info.pageUrl + '`'
-			messageData += '&itemType=file' +
-				'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
-				'&itemFileType=url' +
-				'&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) +
-				'&itemFileName=' + FileName +
-				'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
-				'&messageChannelID=' + info.menuItemId.split("-")[1]
-			sendItem(messageData)
-		} else if (info.menuItemId.split('-')[0] === "link" || info.menuItemId.split('-')[0] === "imag") {
-			let isPossibleFile
-			if (info.linkUrl) {
-				if (info.linkUrl.includes(".")) {
-					isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
-				} else {
-					isPossibleFile = false
-				}
-			}
-			if (info.srcUrl || isPossibleFile ) {
-				const sourceLink = ((info.menuItemId.includes("link")) ? info.linkUrl : info.srcUrl)
-				// If GIF image and channel exists else channel number
-				const channelNumber = ((info.menuItemId.length === 3 && sourceLink.includes(".") && sourceLink.split('/').pop().split(".").pop().toLowerCase().includes("gif")) ? info.menuItemId.split("-")[2] : info.menuItemId.split("-")[1])
-				// Clean up Filename
-				let FileName = sourceLink.split('/').pop()
-				if (FileName.includes(":")) {
-					FileName = sourceLink.split('/').pop().split(":")[0]
-				}
-				if (FileName.includes("?")) {
-					FileName = sourceLink.split('/').pop().split("?")[0]
-				}
-				messageData += '&itemType=file' +
-					'&itemCookies=' + btoa(unescape(encodeURIComponent(cookieString))) +
-					'&itemFileType=url' +
-					'&itemFileData=' + btoa(unescape(encodeURIComponent(sourceLink))) +
-					'&itemFileName=' + FileName +
-					'&messageText=' + btoa(unescape(encodeURIComponent('**🎨 Image** - `' + info.pageUrl + '`'))) +
-					'&messageChannelID=' + channelNumber
-				sendItem(messageData)
-			} else {
-				let sourceLink = ""
-				if (info.linkUrl) {
-					sourceLink = info.linkUrl
-				} else if (info.pageUrl) {
-					sourceLink = info.pageUrl
-				}
-				// If YouTube link else standard Link text
-				const messageText = (( sourceLink.includes("youtube.com") || sourceLink.includes("youtu.be")) ? `**📼 ${tab.title}** - ***${encodeURI(sourceLink)}***` : `**🔗 ${tab.title}** - ***${encodeURI(sourceLink)}***`)
-				sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(messageText)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
-			}
-		} else {
-			alert("Not understood")
-		}
-	})
-};
-// Preform a full reload or Inital load
+// Preform a full reload or initial load
 // Load Config and Generate Menu Items
 function loadExtension() {
 	loadConfig(function (config) {
