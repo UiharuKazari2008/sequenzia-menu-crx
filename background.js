@@ -189,7 +189,7 @@ function onClickHandler(info, tab) {
 		}
 
 		// Print Returned Inputs
-		//console.log(info)
+		console.log(info)
 		//console.log(tab)
 		//console.log(cookieString)
 
@@ -276,7 +276,7 @@ function onClickHandler(info, tab) {
 					'&messageText=' + btoa(unescape(encodeURIComponent(messageText))) +
 					'&messageChannelID=' + info.menuItemId.split("-")[1]
 			}
-			if (info.linkUrl && info.linkUrl.includes("pixiv.net/")) { // Pixiv Link
+			if (info.linkUrl !== undefined && info.linkUrl.includes("pixiv.net/")) { // Pixiv Link
 				const itemURL = info.linkUrl
 				if (itemURL.includes("/artworks/")) { // Illustration
 					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
@@ -293,7 +293,7 @@ function onClickHandler(info, tab) {
 				} else {
 					sendDownload()
 				}
-			} else if (info.pageUrl && info.pageUrl.includes("pixiv.net/" && !info.srcUrl)) { // Pixiv Page (but not if you selected a image)
+			} else if (info.pageUrl !== undefined && info.pageUrl.includes("pixiv.net/") && info.srcUrl === undefined) { // Pixiv Page (but not if you selected a image)
 				const itemURL = info.pageUrl
 				if (itemURL.includes("/artworks/")) { // Illustration
 					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
