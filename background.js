@@ -17,7 +17,7 @@ about release, "snippets", or to report spillage are to be directed to:
 
 - ACR Docutrol -----------------------------------------
 (Academy City Research Document & Data Control Services)
-docutrol@acr.moe - 301-399-3671 - docs.acr.moe/docutrol
+docutrol@acr.moe - 484-362-9855 - docs.acr.moe/docutrol
 ====================================================================================== */
 
 const acceptedImages = [ "jpg","png","jpeg","jiff","tiff","gif","gifv" ]
@@ -189,7 +189,7 @@ function onClickHandler(info, tab) {
 		}
 
 		// Print Returned Inputs
-		console.log(info)
+		//console.log(info)
 		//console.log(tab)
 		//console.log(cookieString)
 
@@ -278,34 +278,36 @@ function onClickHandler(info, tab) {
 			}
 			if (info.linkUrl !== undefined && info.linkUrl.includes("pixiv.net/")) { // Pixiv Link
 				const itemURL = info.linkUrl
+				const itemID = parseInt(itemURL.split("/").pop())
 				if (itemURL.includes("/artworks/")) { // Illustration
-					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
+					console.log(`Got Pixiv Illustration Link : ${itemURL} ID:"${itemID}"`)
 					messageData += '&itemType=pixiv' +
 						'&itemContentType=DownloadPost' +
-						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&itemContentID=' + itemID +
 						'&messageChannelID=' + info.menuItemId.split("-")[1]
 				} else if (itemURL.includes("/users/")) { // User
-					console.log(`Got Pixiv User Link : ${itemURL}`)
+					console.log(`Got Pixiv User Link : ${itemURL} ID:"${itemID}"`)
 					messageData += '&itemType=pixiv' +
 						'&itemContentType=DownloadPost' +
-						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&itemContentID=' + itemID +
 						'&messageChannelID=' + info.menuItemId.split("-")[1]
 				} else {
 					sendDownload()
 				}
 			} else if (info.pageUrl !== undefined && info.pageUrl.includes("pixiv.net/") && info.srcUrl === undefined) { // Pixiv Page (but not if you selected a image)
 				const itemURL = info.pageUrl
+				const itemID = parseInt(itemURL.split("/").pop())
 				if (itemURL.includes("/artworks/")) { // Illustration
-					console.log(`Got Pixiv Illustration Link : ${itemURL}`)
+					console.log(`Got Pixiv Illustration Link : ${itemURL} ID:"${itemID}"`)
 					messageData += '&itemType=pixiv' +
-						'&itemContentType=DownloadUser' +
-						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&itemContentType=DownloadPost' +
+						'&itemContentID=' + itemID +
 						'&messageChannelID=' + info.menuItemId.split("-")[1]
 				} else if (itemURL.includes("/users/")) { // User
-					console.log(`Got Pixiv User Link : ${itemURL}`)
+					console.log(`Got Pixiv User Link : ${itemURL} ID:"${itemID}"`)
 					messageData += '&itemType=pixiv' +
 						'&itemContentType=DownloadUser' +
-						'&itemContentID=' + parseInt(itemURL.split("/").pop()) +
+						'&itemContentID=' + itemID +
 						'&messageChannelID=' + info.menuItemId.split("-")[1]
 				} else {
 					sendDownload()
