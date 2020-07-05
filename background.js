@@ -325,7 +325,7 @@ function onClickHandler(info, tab) {
 					isPossibleFile = false
 				}
 			}
-			if ((info.srcUrl && !info.srcUrl.includes("youtube.com")) || isPossibleFile ) {
+			if ((info.srcUrl && !(info.srcUrl.includes("youtube.com"))) || isPossibleFile ) {
 				let sourceLink = info.srcUrl
 				if (info.menuItemId.includes("link")) { sourceLink = info.linkUrl }
 				// If GIF image and channel exists else channel number
