@@ -258,7 +258,14 @@ function onClickHandler(info, tab) {
 			// For any non-special downloads
 			function sendDownload() {
 				let sourceLink = info.pageUrl
-				if (info.srcUrl ) { sourceLink = info.srcUrl } else if (info.linkUrl) { sourceLink = info.linkUrl }
+				if (info.srcUrl ) {
+					if (info.srcUrl.includes("youtube.com")) {
+					} else {
+						sourceLink = info.srcUrl
+					}
+				} else if (info.linkUrl) {
+					sourceLink = info.linkUrl
+				}
 				let FileName = sourceLink.split('/').pop()
 				if (FileName.includes(":")) {
 					FileName = FileName.split(":")[0]
