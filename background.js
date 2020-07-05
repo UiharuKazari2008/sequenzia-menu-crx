@@ -319,15 +319,15 @@ function onClickHandler(info, tab) {
 		} else if (info.menuItemId.split('-')[0] === "link" || info.menuItemId.split('-')[0] === "imag") {
 			let isPossibleFile
 			if (info.srcUrl || info.linkUrl) {
-				if (info.linkUrl.includes(".")) {
-					isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
-				} else {
-					if (info.srcUrl) {
-						if (info.srcUrl.includes("youtube.com")) {
-							isPossibleFile = false
-						} else {
-							isPossibleFile = true
-						}
+				if (info.srcUrl) {
+					if (info.srcUrl.includes("youtube.com")) {
+						isPossibleFile = false
+					} else {
+						isPossibleFile = true
+					}
+				} else if (info.linkUrl) {
+					if (info.linkUrl.includes(".")) {
+						isPossibleFile = acceptedImages.includes(info.linkUrl.split('/').pop().split(".").pop().toLowerCase())
 					} else {
 						isPossibleFile = false
 					}
