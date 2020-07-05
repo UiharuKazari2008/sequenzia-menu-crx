@@ -319,10 +319,14 @@ function onClickHandler(info, tab) {
 				} else {
 					sendDownload()
 				}
-			} else if (info.linkUrl !== undefined && info.linkUrl.includes("youtube.com")) { // YouTube Link
-				sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(info.linkUrl)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
-			} else if (info.pageUrl !== undefined && info.pageUrl.includes("youtube.com")) { // YouTube Link
-				sendItem(`itemType=text&messageText=${btoa(unescape(encodeURIComponent(info.pageUrl)))}&messageChannelID=${info.menuItemId.split("-")[1]}`)
+			} else if (info.linkUrl !== undefined && info.linkUrl.includes("youtube.com/watch?v=")) { // YouTube Link
+				messageData += '&itemType=youtube' +
+					'&itemContentUrl=' +  btoa(unescape(encodeURIComponent(info.linkUrl))) +
+					'&messageChannelID=' + info.menuItemId.split("-")[1]
+			} else if (info.pageUrl !== undefined && info.pageUrl.includes("youtube.com/watch?v=")) { // YouTube Link
+				messageData += '&itemType=youtube' +
+					'&itemContentUrl=' +  btoa(unescape(encodeURIComponent(info.pageUrl))) +
+					'&messageChannelID=' + info.menuItemId.split("-")[1]
 			} else {
 				sendDownload()
 			}
